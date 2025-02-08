@@ -2,7 +2,7 @@ import os
 import json
 import base64
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from google.oauth2.credentials import Credentials
 from google.cloud import secretmanager
@@ -10,20 +10,37 @@ from googleapiclient.discovery import build
 
 
 class EmailClient:
-    def __init__(self, subject_name, label_name,
-                 secret_name, output_dir):
+    """
+    A client for fetching emails and downloading attachments from Gmail using the Gmail API.
+
+    Attributes:
+        subject_name (str): The subject line to search for in emails.
+        label_name (str): The label to filter emails by.
+        secret_name (str): The name of the secret in GCP Secret Manager containing Gmail API credentials.
+        output_dir (str): The directory to save downloaded attachments.
+        creds (Credentials): Authorized credentials for accessing the Gmail API.
+        service (Resource): The Gmail API service instance.
+    """
+
+    def __init__(self, subject_name: str, label_name: str, secret_name: str, output_dir: str):
         """
         Initializes the EmailClient with customizable parameters for email filtering and attachment handling.
 
         Args:
             subject_name (str): The subject line to search for in emails.
             label_name (str): The label to filter emails by.
-            secret_name (str): The secret name for accessing the Gmail API
+            secret_name (str): The secret name for accessing the Gmail API.
+            output_dir (str): The directory to save downloaded attachments.
         """
         self.subject_name = subject_name
         self.label_name = label_name
         self.secret_name = secret_name
         self.output_dir = output_dir
+
+        # Ensure the output directory exists
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+
         self.creds = self._get_gmail_credentials()
         self.service = build('gmail', 'v1', credentials=self.creds)
 
@@ -51,7 +68,7 @@ class EmailClient:
             logging.error(f"Failed to fetch Gmail credentials: {e}")
             raise
 
-    def fetch_emails(self) -> list[dict]:
+    def fetch_emails(self) -> List[dict]:
         """
         Fetches emails with the specified label and subject.
 
@@ -67,38 +84,44 @@ class EmailClient:
             logging.error(f"Error fetching emails: {e}")
             return []
 
-    def download_attachment(self, message_id) -> Optional[str]:
+    def download_attachment(self, message_id: str) -> Optional[List[str]]:
         """
-        Downloads the PDF attachment with the specified file name.
+        Downloads all PDF attachments from the specified email message.
 
         Args:
             message_id (str): The ID of the email message.
-        """
 
+        Returns:
+            list: Paths to the downloaded PDF files.
+        """
         try:
             logging.info(f"Fetching email!\nMessage id: {message_id}")
             message = self.service.users().messages().get(userId='me', id=message_id).execute()
-            part = next((p for p in message['payload'].get("parts", []) if p['mimeType'] == 'application/pdf'), None)
-            if part:
-                attachment_id = part["body"]["attachmentId"]
-                file_name = f"{part.get('filename')}"
-                output_path = os.path.join(self.output_dir, file_name)
+            output_paths = []
 
-                # Fetch the actual attachment
-                attachment = self.service.users().messages().attachments().get(
-                    userId="me", messageId=message_id, id=attachment_id
-                ).execute()
+            for part in message['payload'].get("parts", []):
+                if part['mimeType'] == 'application/pdf':
+                    attachment_id = part["body"]["attachmentId"]
+                    file_name = f"{part.get('filename')}"
+                    output_path = os.path.join(self.output_dir, file_name)
 
-                pdf_data = base64.urlsafe_b64decode(attachment["data"])
+                    # Fetch the actual attachment
+                    attachment = self.service.users().messages().attachments().get(
+                        userId="me", messageId=message_id, id=attachment_id
+                    ).execute()
 
-                with open(output_path, "wb") as f:
-                    f.write(pdf_data)
+                    pdf_data = base64.urlsafe_b64decode(attachment["data"])
 
-                logging.info(f"Saved latest salary slip to: {output_path}")
-                return output_path
-            else:
-                logging.warning(f"No PDF attachment found in message {message_id}")
-                return None
+                    with open(output_path, "wb") as f:
+                        f.write(pdf_data)
+
+                    logging.info(f"Saved PDF attachment to: {output_path}")
+                    output_paths.append(output_path)
+
+            if not output_paths:
+                logging.warning(f"No PDF attachments found in message {message_id}")
+
+            return output_paths
         except Exception as e:
-            logging.error(f"Error downloading attachment {message_id}: {e}")
-            return None
+            logging.error(f"Error downloading attachments for message {message_id}: {e}")
+            return []
