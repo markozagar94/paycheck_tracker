@@ -11,19 +11,17 @@ from googleapiclient.discovery import build
 
 class EmailClient:
     def __init__(self, subject_name, label_name,
-                 pdf_file_name, secret_name, output_dir):
+                 secret_name, output_dir):
         """
         Initializes the EmailClient with customizable parameters for email filtering and attachment handling.
 
         Args:
             subject_name (str): The subject line to search for in emails.
             label_name (str): The label to filter emails by.
-            pdf_file_name (str): The name of the PDF attachment to download.
             secret_name (str): The secret name for accessing the Gmail API
         """
         self.subject_name = subject_name
         self.label_name = label_name
-        self.pdf_file_name = pdf_file_name
         self.secret_name = secret_name
         self.output_dir = output_dir
         self.creds = self._get_gmail_credentials()
