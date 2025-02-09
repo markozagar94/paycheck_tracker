@@ -9,6 +9,13 @@ from google.cloud import secretmanager
 from googleapiclient.discovery import build
 
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("email_client.log"), logging.StreamHandler()]
+)
+
+
 class EmailClient:
     """
     A client for fetching emails and downloading attachments from Gmail using the Gmail API.
