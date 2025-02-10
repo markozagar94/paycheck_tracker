@@ -112,7 +112,7 @@ def main() -> None:
     bigquery_client = BigQueryClient(project_id, dataset_id, table_id, primary_key)
 
     # Ensure the table exists
-    bigquery_client.create_table_if_not_exists("salary_table_ddl.sql")
+    bigquery_client.create_table_if_not_exists("salary_data.ddl")
 
     # Determine if historical or incremental load
     historical_load = os.getenv("HISTORICAL_LOAD", "true").lower() == "true"
