@@ -1,0 +1,10 @@
+{
+  "salary_date_pattern": "Salary date:\\s*(\\d{2}\\.\\d{2}\\.\\d{4})",
+  "salary_amounts_patterns": {
+    "Basic": "Basic:.*?([\\d.,]+(€|$))",
+    "Gross Total": "Tax:.*?([\\d.,]+(€|$))",
+    "House Rent": "Gross:.*?([\\d.,]+(€|$))",
+    "Over Time": "Net salary:.*?([\\d.,]+(€|$))"
+
+  }
+}
