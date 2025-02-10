@@ -15,7 +15,7 @@ class BigQueryClient:
     data validation, and data loading (historical and incremental).
     """
 
-    def __init__(self, project_id: str, dataset_id: str, table_id: str):
+    def __init__(self, project_id: str, dataset_id: str, table_id: str, primary_key: str):
         """
         Initializes the BigQuery client.
 
@@ -28,6 +28,7 @@ class BigQueryClient:
         self.project_id = project_id
         self.dataset_id = dataset_id
         self.table_id = table_id
+        self.primary_key = primary_key
         self.full_table_id = f"{project_id}.{dataset_id}.{table_id}"
 
     def create_table_if_not_exists(self, ddl_file: str):
@@ -82,17 +83,20 @@ class BigQueryClient:
 
         try:
             # Load data into a temporary table
-            list_data = data
-            job = self.client.load_table_from_json(list_data, temp_table_id, job_config=job_config)
+            job = self.client.load_table_from_json(data, temp_table_id, job_config=job_config)
             job.result()
+
+            # Dynamically generate the update statement for all columns
+            column_names = [field.name for field in table_schema if field.name != self.primary_key]
+            update_statements = ", ".join([f"target.{col} = source.{col}" for col in column_names])
 
             # Merge data from the temporary table into the main table
             merge_query = f"""
             MERGE `{self.full_table_id}` AS target
             USING `{temp_table_id}` AS source
-            ON target.salary_date = source.salary_date
+            ON target.`{self.primary_key}` = source.`{self.primary_key}`
             WHEN MATCHED THEN
-              UPDATE SET target = source
+              UPDATE SET {update_statements}
             WHEN NOT MATCHED THEN
               INSERT ROW
             """
@@ -104,3 +108,4 @@ class BigQueryClient:
             logging.info(f"Temporary table {temp_table_id} deleted.")
         except Exception as e:
             logging.error(f"Failed to merge incremental data: {e}")
+
