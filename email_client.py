@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import base64
 import logging
@@ -110,7 +111,16 @@ class EmailClient:
                 if part['mimeType'] == 'application/pdf':
                     attachment_id = part["body"]["attachmentId"]
                     file_name = f"{part.get('filename')}"
-                    output_path = os.path.join(self.output_dir, file_name)
+                    creation_date = None
+                    for header in part["headers"]:
+                        if header["name"] == "Content-Disposition":
+                            match = re.search(r'creation-date="([^"]+)"', header["value"])
+                            if match:
+                                creation_date = match.group(1).replace(",", "").replace(":", "").replace(" ", "_")
+                    filename, ext = file_name.rsplit(".", 1)
+                    new_filename = f"{filename}_{creation_date}.{ext}"
+
+                    output_path = os.path.join(self.output_dir, new_filename, )
 
                     # Fetch the actual attachment
                     attachment = self.service.users().messages().attachments().get(
