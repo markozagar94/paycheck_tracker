@@ -6,8 +6,7 @@ from typing import Dict, Optional, Any
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("salary_parser.log"), logging.StreamHandler()]
+    format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 
@@ -125,5 +124,5 @@ class SalaryParser:
         """
         return {
             "salary_date": self.extract_salary_date(),
-            "salary_amounts": self.extract_salary_amounts()
+            **self.extract_salary_amounts()
         }
