@@ -106,7 +106,8 @@ paycheck-tracker/
 ├── email_client.py           # Fetches emails and downloads PDFs
 ├── pdf_parser.py             # Extracts salary details from PDFs
 ├── bigquery_client.py        # Loads and merges data in BigQuery
-├── main.py                   # Entry point of the application
+├── paycheck_tracker.py       # Core logic for the application
+├── main.py                   # Entry point of the application (fetches env vars and JSON configs)
 ├── config.json               # Parsing configuration
 ├── salary_field_mapping.json # Field mapping for structured output
 ├── requirements.txt          # Dependencies
