@@ -44,6 +44,7 @@ Before you begin, ensure you have the following:
    export PROJECT_ID="your-gcp-project-id"
    export DATASET_ID="your-dataset-id"
    export TABLE_ID="your-table-id"
+   export PRIMARY_KEY="your-primary-key"
    ```
 
 5. Customize configuration files:
@@ -117,6 +118,7 @@ paycheck-tracker/
 │   ├── test_email_client.py  
 │   ├── test_pdf_parser.py 
 │   ├── test_bigquery_client.py  
+│   ├── test_paycheck_tracker.py 
 │── utils/
 │   ├── __init__.py
 │   ├── config_loader.py  # Loads JSON config files
