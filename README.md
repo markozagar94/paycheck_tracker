@@ -67,7 +67,6 @@ python -m unittest discover tests/
 ## Project Structure
 ```
 paycheck-tracker/
-├── __init__.py
 ├── email_client.py           # Fetches emails and downloads PDFs
 ├── pdf_parser.py             # Extracts salary details from PDFs
 ├── bigquery_client.py        # Loads and merges data in BigQuery
@@ -86,8 +85,6 @@ paycheck-tracker/
 │   ├── config_loader.py  # Loads JSON config files
 │   ├── currency_utils.py # Currency conversion functions
 │   ├── logging_utils.py  # Custom logging setup
-
-
 ```
 
 ## Roadmap
