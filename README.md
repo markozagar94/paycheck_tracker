@@ -25,7 +25,7 @@ Ensure you have the following installed:
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/paycheck-tracker.git
+   git clone https://github.com/markozagar94/paycheck_tracker
    cd paycheck-tracker
    ```
 2. Install dependencies:
